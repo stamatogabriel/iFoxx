@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  mysqlsrv:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: "ifox2019!"
+      MYSQL_DATABASE: "ifox-db"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data

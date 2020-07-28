@@ -1,0 +1,13 @@
+# Node modules
+node_modules
+/data
+
+# Adonis directory for storing tmp files
+tmp
+
+
+# The development sqlite file
+database/*.sqlite
+
+yarn-error.log
+yarn.lock
