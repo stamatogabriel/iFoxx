@@ -5,8 +5,7 @@ const Database = use('Database')
 
 class SellController {
   async index ({ params }) {
-    const sells = await Sell
-      .query()
+    const sells = await Sell.query()
       .where('contract_id', params.contracts_id)
       .fetch()
 
@@ -20,7 +19,8 @@ class SellController {
     if (contract.volume < data.volume) {
       return response.status(401).send({
         error: {
-          message: 'Volume da venda maior que o disponível em contrato. Entre em contato com o administrador para saber mais'
+          message:
+            'Volume da venda maior que o disponível em contrato. Entre em contato com o administrador para saber mais'
         }
       })
     }
@@ -29,10 +29,22 @@ class SellController {
       .where('id', params.contracts_id)
       .update('to_load', contract.to_load - data.volume)
 
+    console.log(
+      parseFloat(data.sell_price),
+      parseFloat(contract.total_cust),
+      parseFloat(data.comission),
+      parseFloat(data.freigth)
+    )
+
     const sell = await Sell.create({
       ...data,
       contract_id: params.contracts_id,
-      profit: parseFloat(parseFloat(data.sell_price) - parseFloat(contract.total_cust) - parseFloat(data.comission) - parseFloat(data.freigth)).toFixed(4)
+      profit: parseFloat(
+        parseFloat(data.sell_price) -
+          parseFloat(contract.total_cust) -
+          parseFloat(data.comission) -
+          parseFloat(data.freigth ? data.freigth : 0)
+      )
     })
 
     return sell

@@ -40,12 +40,27 @@ export default function SellerRegister(props) {
     setSellers(response.data);
   };
 
-  const getClients = async () => {
-    const response = await api.get("/enterprises");
-    const data = response.data.filter(item => item.type === "Cliente");
+  async function getClients() {
+    const types = await api.get("types");
+    const clientType = types.data.find(
+      (item) => item.type.toLowerCase() === "cliente"
+    );
 
-    setClients(data);
-  };
+    const enterpriseTypes = await api.get("enterprise_types");
+    const response = enterpriseTypes.data.filter(
+      (item) => item.type_id === clientType.id
+    );
+
+    let clients = [];
+
+    for (let i = 0; i < response.length; i++) {
+      clients.push(
+        props.enterprises.find((item) => item.id === response[i].enterprise_id)
+      );
+    }
+
+    setClients(clients);
+  }
 
   async function register() {
     try {

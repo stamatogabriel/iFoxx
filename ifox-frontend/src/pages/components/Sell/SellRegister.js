@@ -38,11 +38,11 @@ export default function SellerRegister(props) {
   const inputLabel = useRef(null);
   const [labelWidth, setLabelWidth] = useState(0);
 
-  useEffect(() => {
-    const data = props.enterprises.filter((item) => item.type === "Cliente");
+  useEffect(async () => {
     getContracts();
+    const data = await getClients();
+    setGroups(props.groups);
     setClients(data);
-    setGroups(props.groups)
     setLabelWidth(inputLabel.current.offsetWidth);
   }, [props.enterprises, props.groups]);
 
@@ -50,6 +50,28 @@ export default function SellerRegister(props) {
     const response = await api.get("contracts");
 
     return setContracts(response.data);
+  }
+
+  async function getClients() {
+    const types = await api.get("types");
+    const clientType = types.data.find(
+      (item) => item.type.toLowerCase() === "cliente"
+    );
+
+    const enterpriseTypes = await api.get("enterprise_types");
+    const response = enterpriseTypes.data.filter(
+      (item) => item.type_id === clientType.id
+    );
+
+    let clients = [];
+
+    for (let i = 0; i < response.length; i++) {
+      clients.push(
+        props.enterprises.find((item) => item.id === response[i].enterprise_id)
+      );
+    }
+
+    return clients;
   }
 
   async function register() {
@@ -114,166 +136,168 @@ export default function SellerRegister(props) {
   };
 
   return (
-      <Container>
-        <Title variant="h4">Nova Venda</Title>
-        <InputWrapper>
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ width: "49.5%", marginTop: 0 }}
+    <Container>
+      <Title variant="h4">Nova Venda</Title>
+      <InputWrapper>
+        <FormControl
+          variant="outlined"
+          size="small"
+          style={{ width: "49.5%", marginTop: 0 }}
+        >
+          <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
+            Contrato
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={contractSell}
+            onChange={handleContractChange}
+            labelWidth={labelWidth}
           >
-            <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
-              Contrato
-            </InputLabel>
-            <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              value={contractSell}
-              onChange={handleContractChange}
-              labelWidth={labelWidth}
-            >
-              <MenuItem value="">
-                <em>Selecione o contrato</em>
-              </MenuItem>
-              {contracts &&
-                contracts.map((contract) => (
-                  <MenuItem value={contract.id}>
-                    {contract.contract_number}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ width: "49.5%", marginTop: 0 }}
+            <MenuItem value="">
+              <em>Selecione o contrato</em>
+            </MenuItem>
+            {contracts &&
+              contracts.map((contract) => (
+                <MenuItem value={contract.id}>
+                  {contract.contract_number}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+        <FormControl
+          variant="outlined"
+          size="small"
+          style={{ width: "49.5%", marginTop: 0 }}
+        >
+          <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
+            Vendedor
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={sellerSell}
+            onChange={handleChange}
+            labelWidth={labelWidth}
           >
-            <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
-              Vendedor
-            </InputLabel>
-            <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              value={sellerSell}
-              onChange={handleChange}
-              labelWidth={labelWidth}
-            >
-              <MenuItem value="">
-                <em>Selecione o vendedor</em>
-              </MenuItem>
-              {props.sellers &&
-                props.sellers.map((seller) => (
-                  <MenuItem value={seller.id}>{seller.name}</MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        </InputWrapper>
-        <InputWrapper>
-          <FormControlLabel
-            style={{ color: "#555", width: "49.5%", marginTop: 0 }}
-            control={
-              <Checkbox
-                color='primary'
-                checked={isGroup}
-                onChange={(e) => setIsGroup(!isGroup)}
-              />
-            }
-            label="Venda para Redes"
-          />
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ width: "49.5%", marginTop: 0 }}
+            <MenuItem value="">
+              <em>Selecione o vendedor</em>
+            </MenuItem>
+            {props.sellers &&
+              props.sellers.map((seller) => (
+                <MenuItem value={seller.id}>{seller.name}</MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+      </InputWrapper>
+      <InputWrapper>
+        <FormControlLabel
+          style={{ color: "#555", width: "49.5%", marginTop: 0 }}
+          control={
+            <Checkbox
+              color="primary"
+              checked={isGroup}
+              onChange={(e) => setIsGroup(!isGroup)}
+            />
+          }
+          label="Venda para Redes"
+        />
+        <FormControl
+          variant="outlined"
+          size="small"
+          style={{ width: "49.5%", marginTop: 0 }}
+        >
+          <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
+            {!isGroup ? "Cliente" : "Rede"}
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={clientSell}
+            onChange={handleClientChange}
+            labelWidth={labelWidth}
           >
-            <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
-            {!isGroup ? 'Cliente' : 'Rede'}
-            </InputLabel>
-            <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              value={clientSell}
-              onChange={handleClientChange}
-              labelWidth={labelWidth}
-            >
-              <MenuItem value="">
-          <em>{`Selecione ${!isGroup ? 'o cliente' : 'a rede'}`}</em>
-              </MenuItem>
-              {clients && !isGroup &&
-                clients.map((client) => (
-                  <MenuItem value={client.id}>{client.corporate_name}</MenuItem>
-                ))}
-              {groups && isGroup &&
-                groups.map((client) => (
-                  <MenuItem value={client.id}>{client.name}</MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        </InputWrapper>
-        <InputWrapper>
-          <FormControl
-            style={{ width: "49.5%", marginTop: 0 }}
-            variant="outlined"
-            size="small"
+            <MenuItem value="">
+              <em>{`Selecione ${!isGroup ? "o cliente" : "a rede"}`}</em>
+            </MenuItem>
+            {clients &&
+              !isGroup &&
+              clients.map((client) => (
+                <MenuItem value={client.id}>{client.corporate_name}</MenuItem>
+              ))}
+            {groups &&
+              isGroup &&
+              groups.map((client) => (
+                <MenuItem value={client.id}>{client.name}</MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+      </InputWrapper>
+      <InputWrapper>
+        <FormControl
+          style={{ width: "49.5%", marginTop: 0 }}
+          variant="outlined"
+          size="small"
+        >
+          <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
+            Tipo do frete
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={typeFreigth}
+            onChange={handleContractFreigth}
+            labelWidth={labelWidth}
           >
-            <InputLabel ref={inputLabel} id="demo-simple-select-outlined-label">
-              Tipo do frete
-            </InputLabel>
-            <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              value={typeFreigth}
-              onChange={handleContractFreigth}
-              labelWidth={labelWidth}
-            >
-              <MenuItem value="">
-                <em>Selecione o tipo do frete</em>
-              </MenuItem>
-              <MenuItem value="CIF">CIF</MenuItem>
-              <MenuItem value="FOB">FOB</MenuItem>
-            </Select>
-          </FormControl>
-          <Input
-            style={{ width: "49.5%", marginTop: 0 }}
-            size="small"
-            variant="outlined"
-            label="Preço por litro"
-            value={sellPrice}
-            onChange={(e) => setSellPrice(e.target.value)}
-            InputProps={{
-              inputComponent: NumberFormat,
-            }}
-          />
-        </InputWrapper>
-        <InputWrapper>
-          <Input
-            style={{ width: "49.5%", marginTop: 0 }}
-            size="small"
-            variant="outlined"
-            label="Comissão do vendedor"
-            value={comission}
-            onChange={(e) => setComission(e.target.value)}
-            InputProps={{
-              inputComponent: NumberFormat,
-            }}
-          />
-          <Input
-            style={{ width: "49.5%", marginTop: 0 }}
-            size="small"
-            variant="outlined"
-            label="Volume"
-            type="number"
-            inputProps={{ min: "0", step: "10" }}
-            value={volume}
-            onChange={(e) => setVolume(e.target.value)}
-          />
-        </InputWrapper>
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <Button color="primary" onClick={register} variant="contained">
-            Salvar
-          </Button>
-        )}
-      </Container>
+            <MenuItem value="">
+              <em>Selecione o tipo do frete</em>
+            </MenuItem>
+            <MenuItem value="CIF">CIF</MenuItem>
+            <MenuItem value="FOB">FOB</MenuItem>
+          </Select>
+        </FormControl>
+        <Input
+          style={{ width: "49.5%", marginTop: 0 }}
+          size="small"
+          variant="outlined"
+          label="Preço por litro"
+          value={sellPrice}
+          onChange={(e) => setSellPrice(e.target.value)}
+          InputProps={{
+            inputComponent: NumberFormat,
+          }}
+        />
+      </InputWrapper>
+      <InputWrapper>
+        <Input
+          style={{ width: "49.5%", marginTop: 0 }}
+          size="small"
+          variant="outlined"
+          label="Comissão do vendedor"
+          value={comission}
+          onChange={(e) => setComission(e.target.value)}
+          InputProps={{
+            inputComponent: NumberFormat,
+          }}
+        />
+        <Input
+          style={{ width: "49.5%", marginTop: 0 }}
+          size="small"
+          variant="outlined"
+          label="Volume"
+          type="number"
+          inputProps={{ min: "0", step: "10" }}
+          value={volume}
+          onChange={(e) => setVolume(e.target.value)}
+        />
+      </InputWrapper>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <Button color="primary" onClick={register} variant="contained">
+          Salvar
+        </Button>
+      )}
+    </Container>
   );
 }

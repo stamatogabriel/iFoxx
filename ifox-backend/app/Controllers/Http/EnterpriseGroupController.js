@@ -13,7 +13,7 @@ class EnterpriseGroupController {
   }
 
   async store ({ request }) {
-    const data = request.only(['name'])
+    const data = request.all()
 
     const group = await EnterpriseGroup.create(data)
 

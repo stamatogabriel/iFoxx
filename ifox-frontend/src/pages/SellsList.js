@@ -43,6 +43,8 @@ export default function SellsList() {
   const [openEdit, setOpenEdit] = useState(false);
   const [sellEdit, setSellEdit] = useState({});
   const [addContract, setAddContract] = useState(false);
+  const [types, setTypes] = useState([])
+  const [enterpriseTypes, setEnterpriseTypes] = useState([])
 
   useEffect(() => {
     getLists();
@@ -223,6 +225,7 @@ export default function SellsList() {
         >
           <SellUpdate
             sell={sellEdit}
+            enterprises={enterprises}
             handleClose={handleCloseEdit.bind()}
             getUser={getSells.bind()}
           />
